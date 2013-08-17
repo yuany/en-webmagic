@@ -1,6 +1,15 @@
-*.class
-
-# Package Files #
-*.jar
-*.war
-*.ear
+target/*
+*.iml
+out/
+logs/*
+tests/log/*
+.DS_Store
+*.swp
+*~
+.project
+/*/target
+/*/.classpath
+/*/.settings
+/*/build
+/logs
+target
