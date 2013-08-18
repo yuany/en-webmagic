@@ -1,22 +1,31 @@
 package us.codecraft.webmagic.downloader;
 
+import java.util.Map;
+
 import org.apache.http.HttpVersion;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.params.CookiePolicy;
+import org.apache.http.client.params.HttpClientParams;
 import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.cookie.CookieSpec;
+import org.apache.http.cookie.CookieSpecFactory;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.impl.cookie.BasicClientCookie;
-import org.apache.http.params.*;
-import us.codecraft.webmagic.Site;
+import org.apache.http.impl.cookie.BrowserCompatSpec;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.CoreConnectionPNames;
+import org.apache.http.params.CoreProtocolPNames;
+import org.apache.http.params.HttpParams;
+import org.apache.http.params.HttpProtocolParamBean;
 
-import java.util.Map;
+import us.codecraft.webmagic.Site;
 
 /**
  * @author code4crafter@gmail.com <br>
@@ -71,6 +80,13 @@ public class HttpClientPool {
         connectionManager.setMaxTotal(poolSize);
         connectionManager.setDefaultMaxPerRoute(100);
         DefaultHttpClient httpClient = new DefaultHttpClient(connectionManager, params);
+        httpClient.getCookieSpecs().register("lenient", new CookieSpecFactory() {
+            public CookieSpec newInstance(HttpParams params) {
+                return new BrowserCompatSpec();
+            }
+        });
+        HttpClientParams.setCookiePolicy(httpClient.getParams(), "lenient");
+        
         if (site != null) {
             generateCookie(httpClient, site);
         }
@@ -90,5 +106,4 @@ public class HttpClientPool {
         }
         httpClient.setCookieStore(cookieStore);
     }
-
 }

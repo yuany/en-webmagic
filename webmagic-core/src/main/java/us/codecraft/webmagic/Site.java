@@ -242,6 +242,11 @@ public class Site {
             public Site getSite() {
                 return Site.this;
             }
+
+			@Override
+			public void cron(String expr) {
+				
+			}
         };
     }
 

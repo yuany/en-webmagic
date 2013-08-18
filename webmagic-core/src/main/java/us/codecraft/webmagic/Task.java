@@ -19,5 +19,7 @@ public interface Task {
      * @return site
      */
     public Site getSite();
+    
+    public void cron(String expr);
 
 }

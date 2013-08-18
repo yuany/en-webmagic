@@ -1,5 +1,6 @@
 package us.codecraft.webmagic.model;
 
+import us.codecraft.webmagic.Constant;
 import us.codecraft.webmagic.Page;
 import us.codecraft.webmagic.Request;
 import us.codecraft.webmagic.Site;
@@ -51,8 +52,11 @@ class ModelPageProcessor implements PageProcessor {
     @Override
     public void process(Page page) {
         for (PageModelExtractor pageModelExtractor : pageModelExtractorList) {
-            extractLinks(page, pageModelExtractor.getHelpUrlRegionSelector(), pageModelExtractor.getHelpUrlPatterns());
-            extractLinks(page, pageModelExtractor.getTargetUrlRegionSelector(), pageModelExtractor.getTargetUrlPatterns());
+        	Object obj = page.getRequest().getExtra(Constant.IS_FROM_TEST_REQUEST);
+        	if (obj == null || !(Boolean)obj) {
+        		extractLinks(page, pageModelExtractor.getHelpUrlRegionSelector(), pageModelExtractor.getHelpUrlPatterns());
+        		extractLinks(page, pageModelExtractor.getTargetUrlRegionSelector(), pageModelExtractor.getTargetUrlPatterns());
+        	}
             Object process = pageModelExtractor.process(page);
             if (process == null || (process instanceof List && ((List<?>) process).size() == 0)) {
                 page.getResultItems().setSkip(true);

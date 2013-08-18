@@ -11,9 +11,9 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 
 import us.codecraft.webmagic.Page;
+import us.codecraft.webmagic.model.annotation.ComboExtract;
 import us.codecraft.webmagic.model.annotation.ConfigInfo;
 import us.codecraft.webmagic.model.annotation.ExprType;
-import us.codecraft.webmagic.model.annotation.ComboExtract;
 import us.codecraft.webmagic.model.annotation.ExtractBy;
 import us.codecraft.webmagic.model.annotation.ExtractBy2;
 import us.codecraft.webmagic.model.annotation.ExtractBy3;
@@ -21,9 +21,10 @@ import us.codecraft.webmagic.model.annotation.ExtractByRaw;
 import us.codecraft.webmagic.model.annotation.ExtractByUrl;
 import us.codecraft.webmagic.model.annotation.HelpUrl;
 import us.codecraft.webmagic.model.annotation.TargetUrl;
+import us.codecraft.webmagic.selector.AbstractedSelector;
 import us.codecraft.webmagic.selector.AndSelector;
+import us.codecraft.webmagic.selector.ContainSelector;
 import us.codecraft.webmagic.selector.CssSelector;
-import us.codecraft.webmagic.selector.TextContainSelector;
 import us.codecraft.webmagic.selector.OrSelector;
 import us.codecraft.webmagic.selector.RegexSelector;
 import us.codecraft.webmagic.selector.Selector;
@@ -130,15 +131,25 @@ class PageModelExtractor {
 			ComboExtract.OP op = extract.op();
 			for (int i = 0; i < extractBys.length; i++) {
 				ExtractBy extractBy = extractBys[i];
-				ConfigInfo configInfo = extractBy.configure();
-				boolean isOuterHtml = configInfo.isOuterHtml();
-				String attrName = configInfo.attr();
-				String defaultValue = configInfo.defaultValue();
-				
 				if (i == 0) {
 					fieldExtractor = getAnnotationExtractBy(extractBy, clazz, field);
 				} else {
-					fieldExtractor = addExtractBy(fieldExtractor, extractBy.type(), extractBy.value(), op, isOuterHtml, attrName, defaultValue);
+					ConfigInfo configInfo = extractBy.configure();
+					boolean isOuterHtml = configInfo.isOuterHtml();
+					String attrName = configInfo.attrName();
+					String defaultValue = configInfo.defaultValue();
+					boolean isTrim = configInfo.isTrim();
+					boolean isRemoveTag = configInfo.isRemoveTag();
+					
+					ConfigInfoObj configInfoObj = new ConfigInfoObj();
+					configInfoObj.setOuterHtml(isOuterHtml);
+					configInfoObj.setAttrName(attrName);
+					configInfoObj.setDefaultValue(defaultValue);
+					configInfoObj.setTrim(isTrim);
+					configInfoObj.setRemoveTag(isRemoveTag);
+					
+					fieldExtractor = addExtractBy(fieldExtractor, extractBy.type(), extractBy.value(), op,
+							configInfoObj);
 				}
 			}
 		}
@@ -147,35 +158,48 @@ class PageModelExtractor {
 	}
 
 	private Selector getSelector(ExprType type, String expr) {
-		return getSelector(type, expr, true, null, null);
+		ConfigInfoObj configInfoObj = new ConfigInfoObj();
+		configInfoObj.setOuterHtml(true);
+		return getSelector(type, expr, configInfoObj);
 	}
-	
-	private Selector getSelector(ExprType type, String expr, boolean isOuterHtml, String attrName, String defaultValue) {
+
+	private Selector getSelector(ExprType type, String expr, ConfigInfoObj configInfoObj) {
+		if (configInfoObj == null)
+			configInfoObj = new ConfigInfoObj();
+		boolean isOuterHtml = configInfoObj.isOuterHtml();
+		String attrName = configInfoObj.getAttrName();
+		String defaultValue = configInfoObj.getDefaultValue();
+		boolean isTrim = configInfoObj.isTrim();
+		boolean isRemoveTag = configInfoObj.isRemoveTag();
+		AbstractedSelector.Temp tempObj = new AbstractedSelector.Temp();
+		tempObj.setDefaultValue(defaultValue);
+		tempObj.setTrim(isTrim);
+		tempObj.setRemoveTag(isRemoveTag);
 		Selector selector = null;
 		switch (type) {
 		case CSS:
-			selector = new CssSelector(expr, isOuterHtml, attrName, defaultValue);
+			selector = new CssSelector(expr, isOuterHtml, attrName, tempObj);
 			break;
 		case REGEX:
-			selector = new RegexSelector(expr, defaultValue);
+			selector = new RegexSelector(expr, tempObj);
 			break;
 		case XPATH:
-			selector = new XpathSelector(expr, defaultValue);
+			selector = new XpathSelector(expr, tempObj);
 			break;
 		case CONTAINS:
-			selector = new TextContainSelector(expr, defaultValue);
+			selector = new ContainSelector(expr, tempObj);
 			break;
 		default:
-			selector = new XpathSelector(expr, defaultValue);
+			selector = new XpathSelector(expr, tempObj);
 		}
 		return selector;
 	}
-	
+
 	private FieldExtractor addExtractBy(FieldExtractor fieldExtractor, ExprType type, String expr, ComboExtract.OP op,
-			boolean isOuterHtml, String attrName, String defaultValue) {
+			ConfigInfoObj configInfoObj) {
 		if (fieldExtractor == null)
 			return null;
-		Selector selector = getSelector(type, expr, isOuterHtml, attrName,defaultValue);
+		Selector selector = getSelector(type, expr, configInfoObj);
 		if (ComboExtract.OP.AND.equals(op)) {
 			fieldExtractor.setSelector(new AndSelector(fieldExtractor.getSelector(), selector));
 		} else {
@@ -183,9 +207,11 @@ class PageModelExtractor {
 		}
 		return fieldExtractor;
 	}
-	
+
 	private FieldExtractor addExtractBy(FieldExtractor fieldExtractor, ExprType type, String expr, ComboExtract.OP op) {
-		return addExtractBy(fieldExtractor, type, expr, op, false, null, null);
+		ConfigInfoObj configInfoObj = new ConfigInfoObj();
+		configInfoObj.setOuterHtml(true);
+		return addExtractBy(fieldExtractor, type, expr, op, configInfoObj);
 	}
 
 	private FieldExtractor getAnnotationExtractBy(Class<?> clazz, Field field) {
@@ -199,7 +225,21 @@ class PageModelExtractor {
 		if (extractBy != null) {
 			String value = extractBy.value();
 			ConfigInfo configInfo = extractBy.configure();
-			Selector selector = getSelector(extractBy.type(), value, configInfo.isOuterHtml(), configInfo.attr(), configInfo.defaultValue());
+
+			boolean isOuterHtml = configInfo.isOuterHtml();
+			String attrName = configInfo.attrName();
+			String defaultValue = configInfo.defaultValue();
+			boolean isTrim = configInfo.isTrim();
+			boolean isRemoveTag = configInfo.isRemoveTag();
+
+			ConfigInfoObj configInfoObj = new ConfigInfoObj();
+			configInfoObj.setOuterHtml(isOuterHtml);
+			configInfoObj.setAttrName(attrName);
+			configInfoObj.setDefaultValue(defaultValue);
+			configInfoObj.setTrim(isTrim);
+			configInfoObj.setRemoveTag(isRemoveTag);
+
+			Selector selector = getSelector(extractBy.type(), value, configInfoObj);
 			fieldExtractor = new FieldExtractor(field, selector, FieldExtractor.Source.Html, extractBy.notNull(),
 					extractBy.multi());
 			Method setterMethod = getSetterMethod(clazz, field);
@@ -293,10 +333,10 @@ class PageModelExtractor {
 					extractBy.multi());
 		}
 	}
-	
+
 	private Pattern normalizeRegex(String s) {
 		Pattern pattern = null;
-		if(StringUtils.isEmpty(s))
+		if (StringUtils.isEmpty(s))
 			return pattern;
 		pattern = Pattern.compile("(" + s.replace(".", "\\.").replace("*", "[^\"'#]*") + ")");
 		return pattern;

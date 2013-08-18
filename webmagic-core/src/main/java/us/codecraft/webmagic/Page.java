@@ -159,6 +159,10 @@ public class Page {
     public ResultItems getResultItems() {
         return resultItems;
     }
+    
+    public void putHttpResponse(String key, String value) {
+    	this.resultItems.putHttpResponse(key, value);
+    }
 
     @Override
     public String toString() {

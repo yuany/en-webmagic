@@ -1,10 +1,11 @@
 package us.codecraft.webmagic.selector;
 
-import org.apache.commons.lang3.StringUtils;
-import org.htmlcleaner.*;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import org.htmlcleaner.HtmlCleaner;
+import org.htmlcleaner.TagNode;
+import org.htmlcleaner.XPatherException;
 
 /**
  * xpath的选择器。包装了HtmlCleaner。<br>
@@ -21,18 +22,17 @@ public class XpathSelector extends AbstractedSelector {
 		this.xpathStr = xpathStr;
 	}
 
-	public XpathSelector(String xpathStr, String defaultValue) {
-		super(defaultValue);
+	public XpathSelector(String xpathStr, AbstractedSelector.Temp tmpObj) {
+		super(tmpObj);
 		this.xpathStr = xpathStr;
 	}
 
 	@Override
 	public String select(String text) {
-		boolean hasDefaultValue = hasDefaultValue();
 		HtmlCleaner htmlCleaner = new HtmlCleaner();
 		TagNode tagNode = htmlCleaner.clean(text);
 		if (tagNode == null) {
-			return hasDefaultValue ? this.defaultValue : null;
+			return handleNullVal();
 		}
 		try {
 			Object[] objects = tagNode.evaluateXPath(xpathStr);
@@ -40,16 +40,18 @@ public class XpathSelector extends AbstractedSelector {
 				if (objects[0] instanceof TagNode) {
 					TagNode tagNode1 = (TagNode) objects[0];
 					String val = htmlCleaner.getInnerHtml(tagNode1);
-					return StringUtils.isEmpty(val) && hasDefaultValue ? this.defaultValue : val;
+					val = handleVal(val);
+					return val;
 				} else {
 					String val = objects[0].toString();
-					return StringUtils.isEmpty(val) && hasDefaultValue ? this.defaultValue : val;
+					val = handleVal(val);
+					return val;
 				}
 			}
 		} catch (XPatherException e) {
 			e.printStackTrace();
 		}
-		return hasDefaultValue ? this.defaultValue : null;
+		return handleNullVal();
 	}
 
 	@Override
@@ -61,7 +63,7 @@ public class XpathSelector extends AbstractedSelector {
 		if (tagNode == null) {
 			if (hasDefaultValue) {
 				results = new ArrayList<String>();
-				results.add(this.defaultValue);
+				results.add(this.getDefaultValue());
 			}
 			return results;
 		}
@@ -73,11 +75,11 @@ public class XpathSelector extends AbstractedSelector {
 					if (object instanceof TagNode) {
 						TagNode tagNode1 = (TagNode) object;
 						String val = htmlCleaner.getInnerHtml(tagNode1);
-						val = StringUtils.isEmpty(val) && hasDefaultValue ? this.defaultValue : val;
+						val = handleVal(val);
 						results.add(val);
 					} else {
 						String val = object.toString();
-						val = StringUtils.isEmpty(val) && hasDefaultValue ? this.defaultValue : val;
+						val = handleVal(val);
 						results.add(val);
 					}
 				}
@@ -87,8 +89,4 @@ public class XpathSelector extends AbstractedSelector {
 		}
 		return results;
 	}
-	
-	private boolean hasDefaultValue() {
-    	return StringUtils.isNotEmpty(this.defaultValue);
-    }
 }

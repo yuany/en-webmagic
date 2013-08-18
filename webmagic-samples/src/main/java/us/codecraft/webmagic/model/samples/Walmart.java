@@ -1,16 +1,18 @@
 package us.codecraft.webmagic.model.samples;
 
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import us.codecraft.webmagic.Page;
 import us.codecraft.webmagic.Site;
 import us.codecraft.webmagic.model.AfterExtractor;
 import us.codecraft.webmagic.model.OOSpider;
-import us.codecraft.webmagic.model.annotation.ConfigInfo;
-import us.codecraft.webmagic.model.annotation.ExprType;
 import us.codecraft.webmagic.model.annotation.ComboExtract;
 import us.codecraft.webmagic.model.annotation.ComboExtract.OP;
+import us.codecraft.webmagic.model.annotation.ConfigInfo;
+import us.codecraft.webmagic.model.annotation.ExprType;
 import us.codecraft.webmagic.model.annotation.ExtractBy;
 import us.codecraft.webmagic.model.annotation.TargetUrl;
 
@@ -18,7 +20,7 @@ import us.codecraft.webmagic.model.annotation.TargetUrl;
 public class Walmart implements AfterExtractor {
 
 
-	@ExtractBy(value = "//ol[@itemprop='breadcrumb']//li[last()]/a/text()", configure=@ConfigInfo(defaultValue = "isnull"))
+	@ExtractBy(value = "//ol[@itemprop='breadcrumb']//li[last()]/a/text()", configure=@ConfigInfo(defaultValue = ""))
 	private String categroy;
 
 	@ExtractBy(value = "//meta[@itemprop='brand']/@content")
@@ -53,15 +55,18 @@ public class Walmart implements AfterExtractor {
 	@ExtractBy(value = "div#UPC_MESSAGE strong#UPC_CODE", type = ExprType.CSS, configure=@ConfigInfo(isOuterHtml = false))
 	private String upc;
 	
-	@ExtractBy(value = "http://content.webcollage.net/walmart/resources/content-player/v2/content-player.min.js", type = ExprType.CONTAINS)
+	@ExtractBy(value = "http://content.webcollage.net/walmart/resources/content-player/v2/content-player.min.js", type = ExprType.CONTAINS, configure=@ConfigInfo(defaultValue="false"))
 	private String wcPlayer;
 	
 	@ComboExtract(value = 
 			{
-			@ExtractBy(value = "http://content.webcollage.net/walmart/resources/content-player/v2/ppp.min.js", type = ExprType.CONTAINS),
+			@ExtractBy(value = "http://content.webcollage.net/walmart/resources/content-player/v2/ppp.min.js", type = ExprType.CONTAINS,configure=@ConfigInfo(defaultValue="false")),
 			@ExtractBy(value = "div#wc-aplus", type = ExprType.CSS)
 			}, op = OP.OR)
 	private String wcEmc;
+	
+	@ExtractBy(value = "a", type = ExprType.CSS, configure = @ConfigInfo(isRemoveTag=true), multi=true)
+	private List<String> test;
 
 	public Walmart() {
 		//nothing
@@ -69,7 +74,11 @@ public class Walmart implements AfterExtractor {
 
 	@Override
 	public void afterProcess(Page page) {
-		// System.out.println("categroy:\t" + this.categroy + "\t");
+		Map<String, String> map = page.getResultItems().getAllHttpResponses();
+		Set<String> keys = map.keySet();
+		for (String key : keys) {
+			//System.out.println(key + ":" + map.get(key));
+		}
 	}
 
 	public static void main(String[] args) {

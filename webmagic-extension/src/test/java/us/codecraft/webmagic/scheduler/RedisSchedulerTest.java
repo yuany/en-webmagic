@@ -34,6 +34,10 @@ public class RedisSchedulerTest {
             public Site getSite() {
                 return null;
             }
+
+			@Override
+			public void cron(String expr) {
+			}
         };
         Request request = new Request("http://www.ibm.com/developerworks/cn/java/j-javadev2-22/");
         request.putExtra("1","2");

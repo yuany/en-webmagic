@@ -21,7 +21,7 @@ public class CssSelector extends AbstractedSelector {
 	private String selectorText;
 
 	private boolean isOuterHtml;
-	
+
 	private String attrName;
 
 	public CssSelector(String selectorText) {
@@ -37,16 +37,16 @@ public class CssSelector extends AbstractedSelector {
 		this.isOuterHtml = isOuterHtml;
 		this.attrName = "";
 	}
-	
+
 	public CssSelector(String selectorText, boolean isOuterHtml, String attrName) {
 		super();
 		this.selectorText = selectorText;
 		this.isOuterHtml = isOuterHtml;
 		this.attrName = attrName;
 	}
-	
-	public CssSelector(String selectorText, boolean isOuterHtml, String attrName,String defaultValue) {
-		super(defaultValue);
+
+	public CssSelector(String selectorText, boolean isOuterHtml, String attrName, AbstractedSelector.Temp tmpObj) {
+		super(tmpObj);
 		this.selectorText = selectorText;
 		this.isOuterHtml = isOuterHtml;
 		this.attrName = attrName;
@@ -57,7 +57,7 @@ public class CssSelector extends AbstractedSelector {
 		Document doc = Jsoup.parse(text);
 		Elements elements = doc.select(selectorText);
 		if (CollectionUtils.isEmpty(elements)) {
-			return null;
+			return handleNullVal();
 		}
 		Element ele = elements.get(0);
 		return getValue(ele);
@@ -78,15 +78,13 @@ public class CssSelector extends AbstractedSelector {
 		}
 		return strings;
 	}
-	
+
 	private String getValue(Element ele) {
 		if (ele == null)
-			return null;
-		String val =  StringUtils.isEmpty(this.attrName) ? (isOuterHtml ? ele.outerHtml() : ele.text()) : ele.attr(this.attrName);
-		if (StringUtils.isEmpty(val) && StringUtils.isNotEmpty(this.defaultValue)) {
-			val = this.defaultValue;
-		}
+			return handleNullVal();
+		String val = StringUtils.isEmpty(this.attrName) ? (isOuterHtml ? ele.outerHtml() : ele.text()) : ele
+				.attr(this.attrName);
+		val = handleVal(val);
 		return val;
 	}
-	
 }

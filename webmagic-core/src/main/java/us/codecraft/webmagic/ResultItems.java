@@ -12,12 +12,15 @@ import java.util.Map;
 public class ResultItems {
 
     private Map<String, Object> fields = new HashMap<String, Object>();
+    
+    private Map<String, String> httpResponses = new HashMap<String, String>();
 
     private Request request;
 
     private boolean skip;
 
-    public <T> T get(String key) {
+    @SuppressWarnings("unchecked")
+	public <T> T get(String key) {
         Object o = fields.get(key);
         if (o == null) {
             return null;
@@ -25,7 +28,7 @@ public class ResultItems {
         return (T) fields.get(key);
     }
 
-    public  Map<String, Object> getAll() {
+    public Map<String, Object> getAll() {
         return fields;
     }
 
@@ -41,6 +44,19 @@ public class ResultItems {
     public ResultItems setRequest(Request request) {
         this.request = request;
         return this;
+    }
+    
+    public ResultItems putHttpResponse(String key, String value) {
+    	this.httpResponses.put(key, value);
+    	return this;
+    }
+    
+    public String getHttpResponse(String key) {
+    	return this.httpResponses.get(key);
+    }
+    
+    public Map<String, String> getAllHttpResponses() {
+    	return this.httpResponses;
     }
 
     /**

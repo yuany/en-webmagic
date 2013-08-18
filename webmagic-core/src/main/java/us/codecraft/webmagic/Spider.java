@@ -66,6 +66,8 @@ public class Spider implements Runnable, Task {
 	protected final static int STAT_RUNNING = 1;
 
 	protected final static int STAT_STOPPED = 2;
+	
+	private boolean isTest = false;
 
 	/**
 	 * 使用已定义的抽取规则新建一个Spider。
@@ -233,10 +235,13 @@ public class Spider implements Runnable, Task {
 	 */
 	public void test(String... urls) {
 		checkComponent();
+		isTest = true;
 		if (urls.length > 0) {
 			for (String url : urls) {
 				if (validate(url)) {
-					processRequest(new Request(url));
+					Request request = new Request(url);
+					request.putExtra(Constant.IS_FROM_TEST_REQUEST, isTest);
+					processRequest(request);
 				} 
 			}
 		}
@@ -331,5 +336,11 @@ public class Spider implements Runnable, Task {
 	@Override
 	public Site getSite() {
 		return site;
+	}
+
+	@Override
+	public void cron(String expr) {
+		// TODO Auto-generated method stub
+		
 	}
 }
