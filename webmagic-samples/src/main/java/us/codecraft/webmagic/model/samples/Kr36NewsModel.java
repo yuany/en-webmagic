@@ -3,6 +3,7 @@ package us.codecraft.webmagic.model.samples;
 import us.codecraft.webmagic.Site;
 import us.codecraft.webmagic.model.ConsolePageModelPipeline;
 import us.codecraft.webmagic.model.OOSpider;
+import us.codecraft.webmagic.model.annotation.ConfigInfo;
 import us.codecraft.webmagic.model.annotation.ExtractBy;
 import us.codecraft.webmagic.model.annotation.ExtractByUrl;
 import us.codecraft.webmagic.model.annotation.HelpUrl;
@@ -20,7 +21,7 @@ public class Kr36NewsModel {
     @ExtractBy("//h1[@class='entry-title sep10']")
     private String title;
 
-    @ExtractBy("//div[@class='mainContent sep-10']")
+    @ExtractBy(value="//div[@class='mainContent sep-10']",configure=@ConfigInfo(isRemoveTag=true))
     private String content;
 
     @ExtractByUrl

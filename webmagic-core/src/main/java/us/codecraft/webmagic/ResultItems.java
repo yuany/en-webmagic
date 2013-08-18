@@ -13,7 +13,7 @@ public class ResultItems {
 
     private Map<String, Object> fields = new HashMap<String, Object>();
     
-    private Map<String, String> httpResponses = new HashMap<String, String>();
+    private Map<String, String> httpHeaderResponses = new HashMap<String, String>();
 
     private Request request;
 
@@ -46,17 +46,17 @@ public class ResultItems {
         return this;
     }
     
-    public ResultItems putHttpResponse(String key, String value) {
-    	this.httpResponses.put(key, value);
+    public ResultItems putHttpHeaderResponse(String key, String value) {
+    	this.httpHeaderResponses.put(key, value);
     	return this;
     }
     
-    public String getHttpResponse(String key) {
-    	return this.httpResponses.get(key);
+    public String getHttpHeaderResponse(String key) {
+    	return this.httpHeaderResponses.get(key);
     }
     
-    public Map<String, String> getAllHttpResponses() {
-    	return this.httpResponses;
+    public Map<String, String> getAllHttpHeaderResponses() {
+    	return this.httpHeaderResponses;
     }
 
     /**

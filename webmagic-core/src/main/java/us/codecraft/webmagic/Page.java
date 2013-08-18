@@ -161,7 +161,7 @@ public class Page {
     }
     
     public void putHttpResponse(String key, String value) {
-    	this.resultItems.putHttpResponse(key, value);
+    	this.resultItems.putHttpHeaderResponse(key, value);
     }
 
     @Override

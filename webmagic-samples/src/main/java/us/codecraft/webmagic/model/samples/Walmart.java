@@ -74,7 +74,7 @@ public class Walmart implements AfterExtractor {
 
 	@Override
 	public void afterProcess(Page page) {
-		Map<String, String> map = page.getResultItems().getAllHttpResponses();
+		Map<String, String> map = page.getResultItems().getAllHttpHeaderResponses();
 		Set<String> keys = map.keySet();
 		for (String key : keys) {
 			//System.out.println(key + ":" + map.get(key));

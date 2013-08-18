@@ -343,15 +343,6 @@ class PageModelExtractor {
 	}
 
 	public Object process(Page page) {
-		boolean matched = false;
-		for (Pattern targetPattern : targetUrlPatterns) {
-			if (targetPattern.matcher(page.getUrl().toString()).matches()) {
-				matched = true;
-			}
-		}
-		if (!matched) {
-			return null;
-		}
 		if (extractor == null) {
 			return processSingle(page, page.getHtml().toString());
 		} else {
